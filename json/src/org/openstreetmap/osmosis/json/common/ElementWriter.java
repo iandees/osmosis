@@ -58,7 +58,7 @@ public class ElementWriter {
     /**
      * The indent level of the element.
      */
-    private final int myIndentLevel;
+    private int myIndentLevel;
 
     private final TimestampFormat myTimestampFormat;
 
@@ -156,15 +156,11 @@ public class ElementWriter {
      */
     protected void startObject(boolean first) {
         try {
-        	if(!first) {
-        		myWriter.append(", ");
-        		myWriter.append(this.myLineSeparator);
-        	}
-        	
-            writeIndent();
+            if(!first) {
+                myWriter.append(',');
+            }
 
-            myWriter.append("{ ");
-    		myWriter.append(this.myLineSeparator);
+            myWriter.append("{");
         } catch (IOException e) {
             throw new OsmosisRuntimeException("Unable to write data.", e);
         }
@@ -172,11 +168,10 @@ public class ElementWriter {
     
     protected void objectKey(String objectKey, boolean first) {
         try {
-        	if(!first) {
-        		myWriter.append(", ");
-        		myWriter.append(this.myLineSeparator);
-        	}
-        	
+            if(!first) {
+                myWriter.append(',');
+            }
+
             myWriter.append('"');
             myWriter.append(objectKey);
             myWriter.append("\": ");
@@ -188,7 +183,6 @@ public class ElementWriter {
     protected void startList() {
         try {
             myWriter.append("[");
-    		myWriter.append(this.myLineSeparator);
         } catch (IOException e) {
             throw new OsmosisRuntimeException("Unable to write data.", e);
         }
@@ -196,10 +190,9 @@ public class ElementWriter {
     
     protected void appendToList(String value, boolean first) {
         try {
-        	if(!first) {
-        		myWriter.append(", ");
-        		myWriter.append(this.myLineSeparator);
-        	}
+            if(!first) {
+                myWriter.append(',');
+            }
             myWriter.append('"');
             myWriter.append(value);
             myWriter.append('"');
@@ -211,10 +204,10 @@ public class ElementWriter {
     
     protected void appendToList(Number value, boolean first) {
         try {
-        	if(!first) {
-        		myWriter.append(", ");
-        		myWriter.append(this.myLineSeparator);
-        	}
+            if(!first) {
+                myWriter.append(',');
+            }
+            
             myWriter.append(value.toString());
 
         } catch (IOException e) {
@@ -224,12 +217,7 @@ public class ElementWriter {
     
     protected void endList() {
         try {
-            writeIndent();
-
             myWriter.append("]");
-
-            myWriter.append(this.myLineSeparator);
-
         } catch (IOException e) {
             throw new OsmosisRuntimeException("Unable to write data.", e);
         }
@@ -244,12 +232,10 @@ public class ElementWriter {
      */
     protected void addAttribute(final String name, final String value, boolean first) {
         try {
-        	if(!first) {
-        		myWriter.append(", ");
-        		myWriter.append(this.myLineSeparator);
-        	}
-        	
-        	writeIndent();
+            if(!first) {
+                myWriter.append(',');
+            }
+            
             myWriter.append('"');
             myWriter.append(name);
             myWriter.append("\": \"");
@@ -270,12 +256,10 @@ public class ElementWriter {
      */
     protected void addAttribute(final String name, final Number value, boolean first) {
         try {
-        	if(!first) {
-        		myWriter.append(", ");
-        		myWriter.append(this.myLineSeparator);
-        	}
+            if(!first) {
+                myWriter.append(',');
+            }
 
-        	writeIndent();
             myWriter.append('"');
             myWriter.append(name);
             myWriter.append("\": ");
@@ -291,12 +275,7 @@ public class ElementWriter {
      */
     protected void endObject() {
         try {
-            writeIndent();
-
             myWriter.append("}");
-
-            myWriter.append(this.myLineSeparator);
-
         } catch (IOException e) {
             throw new OsmosisRuntimeException("Unable to write data.", e);
         }

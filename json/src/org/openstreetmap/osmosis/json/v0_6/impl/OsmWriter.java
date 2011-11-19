@@ -58,7 +58,7 @@ public class OsmWriter extends ElementWriter {
 		startObject(true);
 		
 		if (renderAttributes) {
-			addAttribute("version", XmlConstants.OSM_VERSION, true);
+			addAttribute("version", Double.toString(XmlConstants.OSM_VERSION), true);
 			addAttribute("generator", "Osmosis " + OsmosisConstants.VERSION, false);
 		}
 	}
