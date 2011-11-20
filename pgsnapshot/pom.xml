@@ -6,7 +6,7 @@
 	<groupId>org.openstreetmap.osmosis</groupId>
 	<artifactId>pgsnapshot</artifactId>
 	<version>0.40-SNAPSHOT</version>
-        <name>Postgres Snapshot</version>
+        <name>Postgres Snapshot</name>
 
 	<!-- Global Build Settings -->
 	<build>
