@@ -1,13 +1,10 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.openstreetmap.osmosis</groupId>
-	<artifactId>json</artifactId>
-	<version>0.40-SNAPSHOT</version>
-        <name>JSON</name>
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.openstreetmap.osmosis</groupId>
+  <artifactId>replication</artifactId>
+  <version>0.40-SNAPSHOT</version>
+  <name>Replication</name>
+  
 	<!-- Global Build Settings -->
 	<build>
 		<testResources>
@@ -72,5 +69,29 @@
 			<artifactId>core</artifactId>
 			<version>0.40-SNAPSHOT</version>
 		</dependency>
+        <dependency>
+            <groupId>org.openstreetmap.osmosis</groupId>
+            <artifactId>set</artifactId>
+            <version>0.40-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openstreetmap.osmosis</groupId>
+            <artifactId>xml</artifactId>
+            <version>0.40-SNAPSHOT</version>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>5.4</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 </project>

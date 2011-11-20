@@ -4,9 +4,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openstreetmap.osmosis</groupId>
-	<artifactId>json</artifactId>
+	<artifactId>testutil</artifactId>
 	<version>0.40-SNAPSHOT</version>
-        <name>JSON</name>
+        <name>Test Util</name>
 
 	<!-- Global Build Settings -->
 	<build>
@@ -71,6 +71,19 @@
 			<groupId>org.openstreetmap.osmosis</groupId>
 			<artifactId>core</artifactId>
 			<version>0.40-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.10</version>
+		</dependency>
+
+		<!-- Test Dependencies -->
+		<dependency>
+			<groupId>com.puppycrawl.tools</groupId>
+			<artifactId>checkstyle</artifactId>
+			<version>5.4</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

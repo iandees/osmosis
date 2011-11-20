@@ -1,0 +1,28 @@
+<project
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        <modelVersion>4.0.0</modelVersion>
+        <groupId>org.openstreetmap.osmosis</groupId>
+        <artifactId>osmosis</artifactId>
+        <version>0.40-SNAPSHOT</version>
+        <packaging>pom</packaging> 
+        <name>Osmosis</name>
+
+        <modules>
+            <module>apidb</module>
+            <module>areafilter</module>
+            <module>core</module>
+            <module>extract</module>
+            <module>hstore-jdbc</module>
+            <module>json</module>
+            <module>pbf</module>
+            <module>pgsimple</module>
+            <module>pgsnapshot</module>
+            <module>replication</module>
+            <module>set</module>
+            <module>tagfilter</module>
+            <module>testutil</module>
+            <module>xml</module>
+        </modules>
+</project>
