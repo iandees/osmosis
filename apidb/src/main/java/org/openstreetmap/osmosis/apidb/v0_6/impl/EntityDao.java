@@ -115,7 +115,9 @@ public abstract class EntityDao<T extends Entity> {
 		StringBuilder sql;
 
 		sql = new StringBuilder();
-		sql.append("SELECT e.id, e.version, e.timestamp, e.visible, u.data_public,");
+		sql.append("SELECT e.");
+		sql.append(entityName);
+		sql.append("_id AS id, e.version, e.timestamp, e.visible, u.data_public,");
 		sql.append(" u.id AS user_id, u.display_name, e.changeset_id");
 
 		for (String fieldName : getTypeSpecificFieldNames()) {
@@ -128,7 +130,11 @@ public abstract class EntityDao<T extends Entity> {
 		sql.append("s e");
 		sql.append(" INNER JOIN ");
 		sql.append(selectedEntityStatement);
-		sql.append(" t ON e.id = t.id AND e.version = t.version");
+		sql.append(" t ON e.");
+		sql.append(entityName);
+		sql.append("_id = t.");
+		sql.append(entityName);
+		sql.append("_id AND e.version = t.version");
 		sql.append(" INNER JOIN changesets c ON e.changeset_id = c.id INNER JOIN users u ON c.user_id = u.id");
 		
 		LOG.log(Level.FINER, "Entity history query: " + sql);
@@ -201,13 +207,19 @@ public abstract class EntityDao<T extends Entity> {
 			ReleasableIterator<DbFeatureHistory<DbFeature<Tag>>> resultIterator;
 			
 			sql =
-				"SELECT et.id, et.k, et.v, et.version"
+				"SELECT et."
+				+ entityName
+				+ "_id AS id, et.k, et.v, et.version"
 				+ " FROM "
 				+ entityName
 				+ "_tags et"
 				+ " INNER JOIN "
 				+ selectedEntityStatement
-				+ " t ON et.id = t.id AND et.version = t.version";
+				+ " t ON et."
+				+ entityName
+				+ "_id = t."
+				+ entityName
+				+ "_id AND et.version = t.version";
 			
 			LOG.log(Level.FINER, "Tag history query: " + sql);
 			
@@ -393,6 +405,7 @@ public abstract class EntityDao<T extends Entity> {
 		String selectedEntityTableName;
 		StringBuilder sql;
 		MapSqlParameterSource parameterSource;
+		ReleasableIterator<ChangeContainer> historyIterator;
 		
 		// PostgreSQL sometimes incorrectly chooses to perform full table scans, these options
 		// prevent this. Note that this is not recommended practice according to documentation
@@ -411,7 +424,9 @@ public abstract class EntityDao<T extends Entity> {
 		sql.append("CREATE TEMPORARY TABLE ");
 		sql.append(selectedEntityTableName);
 		sql.append(" ON COMMIT DROP");
-		sql.append(" AS SELECT id, version FROM ");
+		sql.append(" AS SELECT ");
+		sql.append(entityName);
+		sql.append("_id, version FROM ");
 		sql.append(entityName);
 		sql.append("s WHERE ((");
 		// Add the main transaction ranges to the where clause.
@@ -437,16 +452,23 @@ public abstract class EntityDao<T extends Entity> {
 		namedParamJdbcTemplate.update(sql.toString(), parameterSource);
 		
 		jdbcTemplate.update("ALTER TABLE ONLY " + selectedEntityTableName
-				+ " ADD CONSTRAINT pk_" + selectedEntityTableName + " PRIMARY KEY (id, version)");
+				+ " ADD CONSTRAINT pk_" + selectedEntityTableName
+				+ " PRIMARY KEY (" + entityName + "_id, version)");
 		jdbcTemplate.update("ANALYZE " + selectedEntityTableName);
 		
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER,
-					jdbcTemplate.queryForInt("SELECT Count(id) FROM " + selectedEntityTableName) + " "
-					+ entityName + " records located.");
+					jdbcTemplate.queryForInt("SELECT Count(" + entityName + "_id) FROM " + selectedEntityTableName)
+					+ " " + entityName + " records located.");
 		}
 		
-		return getChangeHistory(selectedEntityTableName, new MapSqlParameterSource());
+		// Extract the data and obtain an iterator for the results.
+		historyIterator = getChangeHistory(selectedEntityTableName, new MapSqlParameterSource());
+		
+		// The temp table is no longer required and can be deleted.
+		jdbcTemplate.execute("DROP TABLE " + selectedEntityTableName);
+		
+		return historyIterator;
 	}
 
 
@@ -463,6 +485,7 @@ public abstract class EntityDao<T extends Entity> {
 		String selectedEntityTableName;
 		StringBuilder sql;
 		MapSqlParameterSource parameterSource;
+		ReleasableIterator<ChangeContainer> historyIterator;
 		
 		// PostgreSQL sometimes incorrectly chooses to perform full table scans, these options
 		// prevent this. Note that this is not recommended practice according to documentation
@@ -479,7 +502,9 @@ public abstract class EntityDao<T extends Entity> {
 		sql.append("CREATE TEMPORARY TABLE ");
 		sql.append(selectedEntityTableName);
 		sql.append(" ON COMMIT DROP");
-		sql.append(" AS SELECT id, version FROM ");
+		sql.append(" AS SELECT ");
+		sql.append(entityName);
+		sql.append("_id, version FROM ");
 		sql.append(entityName);
 		sql.append("s WHERE timestamp > :intervalBegin AND timestamp <= :intervalEnd");
 		
@@ -493,7 +518,13 @@ public abstract class EntityDao<T extends Entity> {
 		
 		jdbcTemplate.update("ANALYZE " + selectedEntityTableName);
 		
-		return getChangeHistory(selectedEntityTableName, new MapSqlParameterSource());
+		// Extract the data and obtain an iterator for the results.
+		historyIterator = getChangeHistory(selectedEntityTableName, new MapSqlParameterSource());
+		
+		// The temp table is no longer required and can be deleted.
+		jdbcTemplate.execute("DROP TABLE " + selectedEntityTableName);
+		
+		return historyIterator;
 	}
 	
 	
@@ -517,7 +548,8 @@ public abstract class EntityDao<T extends Entity> {
 		// Join the entity table to the current version of itself which will return all current
 		// records.
 		return new EntityContainerReader<T>(
-				getEntityHistory("(SELECT id, version FROM current_" + entityName + "s WHERE visible = TRUE)",
+				getEntityHistory("(SELECT id AS " + entityName + "_id, version FROM current_"
+							+ entityName + "s WHERE visible = TRUE)",
 						new MapSqlParameterSource()), getContainerFactory());
 	}
 }

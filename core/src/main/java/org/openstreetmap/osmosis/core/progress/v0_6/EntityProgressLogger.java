@@ -1,6 +1,7 @@
 // This software is released into the Public Domain.  See copying.txt for details.
 package org.openstreetmap.osmosis.core.progress.v0_6;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer;
@@ -22,15 +23,33 @@ public class EntityProgressLogger implements SinkSource {
 	private Sink sink;
 	private ProgressTracker progressTracker;
 	
+	private String prefix;
 	
 	/**
 	 * Creates a new instance.
 	 * 
 	 * @param interval
 	 *            The interval between logging progress reports in milliseconds.
+	 * @param label
+	 *            a label to prefix the logger with; may be null.
 	 */
-	public EntityProgressLogger(int interval) {
+	public EntityProgressLogger(int interval, String label) {
 		progressTracker = new ProgressTracker(interval);
+
+		if (label != null && !label.equals("")) {
+			prefix = "[" + label + "] ";
+		} else {
+			prefix = "";
+		}
+	}
+
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public void initialize(Map<String, Object> metaData) {
+		progressTracker.initialize();
+		sink.initialize(metaData);
 	}
 	
 	
@@ -44,7 +63,8 @@ public class EntityProgressLogger implements SinkSource {
 		
 		if (progressTracker.updateRequired()) {
 			LOG.info(
-					"Processing " + entity.getType() + " " + entity.getId() + ", "
+					prefix
+					+ "Processing " + entity.getType() + " " + entity.getId() + ", "
 					+ progressTracker.getObjectsPerSecond() + " objects/second.");
 		}
 		
@@ -58,8 +78,11 @@ public class EntityProgressLogger implements SinkSource {
 	public void complete() {
 		LOG.info("Processing completion steps.");
 		
+		long start = System.currentTimeMillis();
 		sink.complete();
+		long duration = System.currentTimeMillis() - start;
 		
+		LOG.info("Completion steps took " + duration / 1000d + " seconds.");
 		LOG.info("Processing complete.");
 	}
 	

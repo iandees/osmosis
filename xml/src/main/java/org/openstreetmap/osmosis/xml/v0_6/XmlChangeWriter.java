@@ -3,6 +3,7 @@ package org.openstreetmap.osmosis.xml.v0_6;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.util.Map;
 
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
 import org.openstreetmap.osmosis.core.task.v0_6.ChangeSink;
@@ -19,6 +20,20 @@ import org.openstreetmap.osmosis.xml.v0_6.impl.OsmChangeWriter;
 public class XmlChangeWriter extends BaseXmlWriter implements ChangeSink {
 
 	private OsmChangeWriter osmChangeWriter;
+	
+	
+	/**
+	 * Creates a new instance.
+	 * 
+	 * @param writer
+	 *            The writer to send all data to.
+	 */
+	public XmlChangeWriter(BufferedWriter writer) {
+		super(writer);
+
+        osmChangeWriter = new OsmChangeWriter("osmChange", 0);
+	}
+	
 
 	/**
 	 * Creates a new instance.
@@ -33,6 +48,14 @@ public class XmlChangeWriter extends BaseXmlWriter implements ChangeSink {
 
         osmChangeWriter = new OsmChangeWriter("osmChange", 0);
     }
+    
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void initialize(Map<String, Object> metaData) {
+		// Do nothing.
+	}
 
 
 	/**

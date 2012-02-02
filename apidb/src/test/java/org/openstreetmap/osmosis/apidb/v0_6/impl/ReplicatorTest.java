@@ -46,9 +46,10 @@ public class ReplicatorTest {
 		timeLoader = new MockSystemTimeLoader();
 		
 		// Instantiate the new replicator.
-		replicator = new Replicator(source, destination, snapshotLoader, timeLoader);
+		replicator = new Replicator(source, destination, snapshotLoader, timeLoader, 1, 0, 0);
 		
 		// Provide initialisation data.
+		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:14"));
 		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:14"));
 		snapshotLoader.getSnapshots().add(new TransactionSnapshot("100:200:110,112"));
 		
@@ -56,7 +57,7 @@ public class ReplicatorTest {
 		replicator.replicate();
 		
 		// Verify the final state.
-		state = destination.loadState();
+		state = destination.getCurrentState();
 		Assert.assertEquals("Incorrect final state.",
 				new ReplicationState(
 						200,
@@ -98,11 +99,13 @@ public class ReplicatorTest {
 		timeLoader = new MockSystemTimeLoader();
 		
 		// Instantiate the new replicator.
-		replicator = new Replicator(source, destination, snapshotLoader, timeLoader);
+		replicator = new Replicator(source, destination, snapshotLoader, timeLoader, 1, 0, 0);
 		
 		// We want the snapshot loader to return the same snapshot to simulate no database changes.
 		snapshotLoader.getSnapshots().add(new TransactionSnapshot("100:200:110,112"));
 		// But we want the clock time to have progressed.
+		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:15"));
+		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:15"));
 		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:15"));
 		
 		// Launch the replication process.
@@ -110,7 +113,7 @@ public class ReplicatorTest {
 		
 		// Verify that the final state does not match the initial state, but that the only
 		// difference is the time and increment sequence number.
-		finalState = destination.loadState();
+		finalState = destination.getCurrentState();
 		Assert.assertFalse("Final state should not match initial state.", finalState.equals(initialState));
 		finalState.setTimestamp(initialState.getTimestamp());
 		finalState.setSequenceNumber(finalState.getSequenceNumber() - 1);
@@ -151,18 +154,19 @@ public class ReplicatorTest {
 		timeLoader = new MockSystemTimeLoader();
 		
 		// Instantiate the new replicator.
-		replicator = new Replicator(source, destination, snapshotLoader, timeLoader);
+		replicator = new Replicator(source, destination, snapshotLoader, timeLoader, 1, 0, 0);
 		
 		// Set the snapshot loader to return a snapshot with higher xMax.
 		snapshotLoader.getSnapshots().add(new TransactionSnapshot("100:220"));
 		// We also want the clock time to have progressed.
+		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:15"));
 		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:15"));
 		
 		// Launch the replication process.
 		replicator.replicate();
 		
 		// Verify that the final state is correct.
-		state = destination.loadState();
+		state = destination.getCurrentState();
 		Assert.assertEquals("Incorrect final state.",
 				new ReplicationState(
 						220,
@@ -212,18 +216,19 @@ public class ReplicatorTest {
 		timeLoader = new MockSystemTimeLoader();
 		
 		// Instantiate the new replicator.
-		replicator = new Replicator(source, destination, snapshotLoader, timeLoader);
+		replicator = new Replicator(source, destination, snapshotLoader, timeLoader, 1, 0, 0);
 		
 		// Set the snapshot loader to return a snapshot with higher xMax.
 		snapshotLoader.getSnapshots().add(new TransactionSnapshot("100:220:185"));
 		// We also want the clock time to have progressed.
+		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:15"));
 		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:15"));
 		
 		// Launch the replication process.
 		replicator.replicate();
 		
 		// Verify that the final state is correct.
-		state = destination.loadState();
+		state = destination.getCurrentState();
 		Assert.assertEquals("Incorrect final state.",
 				new ReplicationState(
 						220,
@@ -273,18 +278,19 @@ public class ReplicatorTest {
 		timeLoader = new MockSystemTimeLoader();
 		
 		// Instantiate the new replicator.
-		replicator = new Replicator(source, destination, snapshotLoader, timeLoader);
+		replicator = new Replicator(source, destination, snapshotLoader, timeLoader, 1, 0, 0);
 		
 		// Set the snapshot loader to return a snapshot with higher xMax.
 		snapshotLoader.getSnapshots().add(new TransactionSnapshot("20000:30000:26000"));
 		// We also want the clock time to have progressed.
+		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:15"));
 		timeLoader.getTimes().add(buildDate("2009-10-11 12:13:15"));
 		
 		// Launch the replication process.
 		replicator.replicate();
 		
 		// Verify that the final state is correct.
-		state = destination.loadState();
+		state = destination.getCurrentState();
 		Assert.assertEquals("Incorrect final state.",
 				new ReplicationState(
 						30000,
