@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openstreetmap.osmosis</groupId>
 	<artifactId>pbf</artifactId>
-	<version>0.40-SNAPSHOT</version>
+	<version>0.40.2-SNAPSHOT</version>
         <name>PBF</name>
 
 	<!-- Global Build Settings -->
@@ -70,7 +70,7 @@
 		<dependency>
 			<groupId>org.openstreetmap.osmosis</groupId>
 			<artifactId>core</artifactId>
-			<version>0.40-SNAPSHOT</version>
+			<version>0.40.2-SNAPSHOT</version>
 		</dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -84,6 +84,12 @@
         </dependency>
 
         <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.openstreetmap.osmosis</groupId>
+            <artifactId>testutil</artifactId>
+            <version>0.40.2-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

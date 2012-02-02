@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.openstreetmap.osmosis</groupId>
   <artifactId>hstore-jdbc</artifactId>
-  <version>0.40-SNAPSHOT</version>
+  <version>0.40.2-SNAPSHOT</version>
   <name>Hstore-Jdbc</name>
   
 	<!-- Global Build Settings -->
