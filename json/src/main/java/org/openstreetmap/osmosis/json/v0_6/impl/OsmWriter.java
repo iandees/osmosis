@@ -13,8 +13,6 @@ import org.openstreetmap.osmosis.core.container.v0_6.RelationContainer;
 import org.openstreetmap.osmosis.core.container.v0_6.WayContainer;
 import org.openstreetmap.osmosis.json.common.ElementWriter;
 
-import com.sun.corba.se.spi.orbutil.fsm.State;
-
 
 /**
  * Renders OSM data types as json.
