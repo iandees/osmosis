@@ -20,6 +20,7 @@
             <module>pgsimple</module>
             <module>pgsnapshot</module>
             <module>replication</module>
+            <module>replication-http</module>
             <module>set</module>
             <module>tagfilter</module>
             <module>testutil</module>

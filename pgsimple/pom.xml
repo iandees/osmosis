@@ -70,17 +70,17 @@
 		<dependency>
 			<groupId>org.openstreetmap.osmosis</groupId>
 			<artifactId>core</artifactId>
-			<version>0.40-SNAPSHOT</version>
+			<version>0.40.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openstreetmap.osmosis</groupId>
 			<artifactId>dataset</artifactId>
-			<version>0.40-SNAPSHOT</version>
+			<version>0.40.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openstreetmap.osmosis</groupId>
 			<artifactId>xml</artifactId>
-			<version>0.40-SNAPSHOT</version>
+			<version>0.40.2-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
@@ -98,7 +98,7 @@
 		<dependency>
 			<groupId>org.openstreetmap.osmosis</groupId>
 			<artifactId>testutil</artifactId>
-			<version>0.40-SNAPSHOT</version>
+			<version>0.40.2-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
