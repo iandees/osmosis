@@ -149,7 +149,30 @@ public class ElementWriter {
     protected TimestampFormat getTimestampFormat() {
         return myTimestampFormat;
     }
-    
+
+    /**
+     * Writes the beginning of a JavaScript method call (for JSONP support).
+     */
+    protected void startMethod(String name) {
+        try {
+            myWriter.append(name);
+            myWriter.append("(");
+        } catch (IOException e) {
+            throw new OsmosisRuntimeException("Unable to write data.", e);
+        }
+    }
+
+    /**
+     * Writes the end of a JavaScript method call (for JSONP support).
+     */
+    protected void endMethod() {
+        try {
+            myWriter.append(")");
+        } catch (IOException e) {
+            throw new OsmosisRuntimeException("Unable to write data.", e);
+        }
+    }
+
     /**
      * Writes an element opening line without the final
      * closing portion of the tag.
