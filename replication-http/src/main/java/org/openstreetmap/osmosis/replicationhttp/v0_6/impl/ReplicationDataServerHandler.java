@@ -46,12 +46,12 @@ public class ReplicationDataServerHandler extends SequenceServerHandler {
 
 	private static final Logger LOG = Logger.getLogger(ReplicationDataServerHandler.class.getName());
 	private static final String REQUEST_DATE_FORMAT = "yyyy-MM-dd-HH-mm-ss";
-	private static final int CHUNK_SIZE = 8192;
+	private static final int CHUNK_SIZE = 4096;
 
 	private File dataDirectory;
 	private ReplicationSequenceFormatter sequenceFormatter;
 	private FileChannel chunkedFileChannel;
-	private boolean chunkedFileCountSent;
+	private boolean fileSizeSent;
 	private boolean includeData;
 	private ChannelFuture sequenceFuture;
 
@@ -104,10 +104,9 @@ public class ReplicationDataServerHandler extends SequenceServerHandler {
 	/**
 	 * Search through the replication state records and find the nearest
 	 * replication number with a timestamp earlier or equal to the requested
-	 * date, then return the next sequence number. It is not sufficient to find
-	 * the minimum known sequence record with a timestamp greater than the
-	 * requested date because there may be missing replication records in
-	 * between.
+	 * date. It is not sufficient to find the minimum known sequence record with
+	 * a timestamp greater than the requested date because there may be missing
+	 * replication records in between.
 	 * 
 	 * @param lastDate
 	 *            The last date known by the client.
@@ -118,11 +117,11 @@ public class ReplicationDataServerHandler extends SequenceServerHandler {
 		long endBound = getControl().getLatestSequenceNumber();
 
 		// If the requested date is greater than or equal to the latest known
-		// timestamp we should return our latest sequence number plus one so
-		// that the client will start receiving all new records as they arrive
-		// with possibly some duplicated change records.
+		// timestamp we should return our latest sequence number so that the
+		// client will start receiving all new records as they arrive with
+		// possibly some duplicated change records.
 		if (lastDate.compareTo(getReplicationState(endBound).getTimestamp()) >= 0) {
-			return endBound + 1;
+			return endBound;
 		}
 
 		// Continue splitting our range in half until either we find the
@@ -143,13 +142,13 @@ public class ReplicationDataServerHandler extends SequenceServerHandler {
 			int comparison = lastDate.compareTo(getReplicationState(midPoint).getTimestamp());
 			if (comparison == 0) {
 				// We have an exact match so stop processing now.
-				return midPoint + 1;
+				return midPoint;
 			} else if (comparison < 0) {
 				// We will now search in the lower half of the search range.
 				// Even though we know the midpoint is not the right value, we
 				// include it in the next range because our search assumes that
 				// the right sequence number is less than the end point.
-				endBound = midPoint - 1;
+				endBound = midPoint;
 			} else {
 				// We will now search in the upper half of the search range.
 				// Even though the mid point has a timestamp less than the
@@ -164,7 +163,7 @@ public class ReplicationDataServerHandler extends SequenceServerHandler {
 		// equal to that requested.
 		if (getStateFile(startBound).exists()
 				&& lastDate.compareTo(getReplicationState(startBound).getTimestamp()) >= 0) {
-			return startBound + 1;
+			return startBound;
 		} else {
 			// We cannot find any replication records with an early enough date.
 			// This typically means that replication records for that time
@@ -268,6 +267,11 @@ public class ReplicationDataServerHandler extends SequenceServerHandler {
 		} catch (IOException e) {
 			throw new OsmosisRuntimeException("Unable to read from the replication data file", e);
 		}
+	}
+	
+	
+	private ChannelBuffer buildChunkHeader(long chunkSize) {
+		return ChannelBuffers.copiedBuffer(Long.toString(chunkSize) + "\r\n", CharsetUtil.UTF_8);
 	}
 
 
@@ -386,13 +390,17 @@ public class ReplicationDataServerHandler extends SequenceServerHandler {
 
 		// Load the contents of the state file.
 		ChannelBuffer stateFileBuffer = loadFile(stateFile);
+		
+		// Add a chunk length header.
+		stateFileBuffer = ChannelBuffers.wrappedBuffer(buildChunkHeader(stateFileBuffer.readableBytes()),
+				stateFileBuffer);
 
 		// Only include replication data if initially requested by the client
 		// and if this is not sequence 0.
 		if (includeData && sequenceNumber > 0) {
 			// Open the data file read for sending.
 			chunkedFileChannel = openFileChannel(dataFile);
-			chunkedFileCountSent = false;
+			fileSizeSent = false;
 		}
 
 		/*
@@ -419,22 +427,12 @@ public class ReplicationDataServerHandler extends SequenceServerHandler {
 			// data.
 			ChannelBuffer buffer;
 			ChannelFuture future;
-			if (!chunkedFileCountSent) {
-				// Calculate the number of chunks to be sent and send to the
-				// client.
-				long fileSize = chunkedFileChannel.size();
-				long numChunks = fileSize / CHUNK_SIZE;
-				if ((fileSize % CHUNK_SIZE) > 0) {
-					numChunks++;
-				}
-
-				// Send the number of chunks as a string.
-				ChannelBuffer numChunksBuffer = ChannelBuffers
-						.copiedBuffer(Long.toString(numChunks), CharsetUtil.UTF_8);
-				chunkedFileCountSent = true;
+			if (!fileSizeSent) {
+				// Send a chunk header containing the size of the file.
+				ChannelBuffer fileSizeBuffer = buildChunkHeader(chunkedFileChannel.size());
+				fileSizeSent = true;
 				future = Channels.future(ctx.getChannel());
-				buffer = numChunksBuffer;
-
+				buffer = fileSizeBuffer;
 			} else {
 				// Send the next chunk to the client.
 				buffer = getFileChunk();

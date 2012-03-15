@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +24,7 @@ public abstract class BaseXmlWriter {
 	private static Logger log = Logger.getLogger(BaseXmlWriter.class.getName());
 	
 	
+	private boolean closeRequired;
 	private boolean writerProvided;
 	private File file;
 	private boolean initialized;
@@ -39,6 +41,7 @@ public abstract class BaseXmlWriter {
 		this.writer = writer;
 		
 		writerProvided = true;
+		closeRequired = false;
 	}
 	
 	
@@ -55,6 +58,7 @@ public abstract class BaseXmlWriter {
 		this.compressionMethod = compressionMethod;
 		
 		writerProvided = false;
+		closeRequired = true;
 	}
 	
 	
@@ -106,6 +110,14 @@ public abstract class BaseXmlWriter {
 			throw new OsmosisRuntimeException("Unable to write data.", e);
 		}
 	}
+    
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void initialize(Map<String, Object> metaData) {
+		// Do nothing.
+	}
 	
 	
 	/**
@@ -125,6 +137,10 @@ public abstract class BaseXmlWriter {
 					// make "-" an alias for /dev/stdout
 					if (file.getName().equals("-")) {
 						outStream = System.out;
+						
+						// We don't want to close stdout because we'll need to
+						// re-use it if we receive multiple streams.
+						closeRequired = false;
 					} else {
 						outStream = new FileOutputStream(file);
 					}
@@ -171,24 +187,21 @@ public abstract class BaseXmlWriter {
 		// We need to call this here so that we create empty files if no records
 		// are available.
 		initialize();
-		
+
+		endElementWriter();
+
 		try {
-			endElementWriter();
-			
-			if (!writerProvided) {
-				try {
-					if (writer != null) {
-						writer.close();
-					}
-					
-				} catch (IOException e) {
-					throw new OsmosisRuntimeException("Unable to complete writing to the xml stream.", e);
-				} finally {
-					writer = null;
-				}
+			if (closeRequired) {
+				writer.close();
+				writer = null;
+			} else if (!writerProvided) {
+				writer.flush();
 			}
-		} finally {
+
 			initialized = false;
+
+		} catch (IOException e) {
+			throw new OsmosisRuntimeException("Unable to complete writing to the xml stream.", e);
 		}
 	}
 	
@@ -198,7 +211,7 @@ public abstract class BaseXmlWriter {
 	 */
 	public void release() {
 		try {
-			if (!writerProvided) {
+			if (closeRequired) {
 				try {
 					try {
 						if (writer != null) {
